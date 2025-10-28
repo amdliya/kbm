@@ -253,7 +253,9 @@
             <!-- Dashboard Section -->
             <div id="dashboard" class="content-section active p-8">
                 <h2 class="text-3xl font-bold text-gray-800 mb-8">Dashboard</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                
+                <!-- Statistics Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-purple-400">
                         <div class="flex items-center justify-between">
                             <div>
@@ -288,6 +290,51 @@
                                 <p class="text-2xl font-bold text-gray-800" id="jurnalHariIni">0</p>
                             </div>
                             <div class="text-purple-600 text-3xl">📝</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Gender Distribution Chart -->
+                    <div class="bg-white p-6 rounded-xl shadow-md">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-xl font-semibold text-gray-800">Distribusi Jenis Kelamin per Kelas</h3>
+                            <div class="text-2xl">👥</div>
+                        </div>
+                        <div class="h-80 overflow-x-auto">
+                            <canvas id="genderChart" class="w-full h-full"></canvas>
+                        </div>
+                        <div class="flex justify-center mt-4 gap-6">
+                            <div class="flex items-center gap-2">
+                                <div class="w-4 h-4 bg-blue-500 rounded"></div>
+                                <span class="text-sm text-gray-600">Laki-laki</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-4 h-4 bg-pink-500 rounded"></div>
+                                <span class="text-sm text-gray-600">Perempuan</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Grades List -->
+                    <div class="bg-white p-6 rounded-xl shadow-md">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-xl font-semibold text-gray-800">3 Nilai Tertinggi per Kelas</h3>
+                            <div class="text-2xl">🏆</div>
+                        </div>
+                        <div class="mb-4">
+                            <label for="topGradesClassFilter" class="block text-sm font-medium text-gray-700 mb-2">Filter Kelas:</label>
+                            <select id="topGradesClassFilter" onchange="updateTopGradesList()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">Pilih Kelas</option>
+                            </select>
+                        </div>
+                        <div class="h-80 overflow-y-auto">
+                            <div id="topGradesList" class="space-y-3">
+                                <div class="text-center text-gray-500 py-8">
+                                    Pilih kelas untuk melihat 3 nilai tertinggi
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -429,6 +476,25 @@
                                 <select id="filterStudentClass" onchange="filterStudentsByClass()" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                     <option value="">Semua Kelas</option>
                                 </select>
+                                <button onclick="downloadStudentsByClass()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm">
+                                    📥 Unduh CSV
+                                </button>
+                                <button onclick="deleteStudentsByClass()" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm">
+                                    🗑️ Hapus Kelas
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Search Bar -->
+                        <div class="mb-4">
+                            <div class="relative">
+                                <input type="text" id="searchStudentName" onkeyup="searchStudents()" placeholder="🔍 Cari nama siswa..." class="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-400">🔍</span>
+                                </div>
+                                <button onclick="clearStudentSearch()" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600" title="Hapus pencarian">
+                                    <span id="clearSearchBtn" class="hidden">❌</span>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -457,6 +523,25 @@
             <div id="presensi" class="content-section p-8">
                 <h2 class="text-3xl font-bold text-gray-800 mb-8">Input Presensi</h2>
                 
+                <!-- CSV Upload Section -->
+                <div class="bg-white p-6 rounded-xl shadow-md mb-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-semibold">Upload Presensi CSV</h3>
+                        <div class="flex gap-3">
+                            <button onclick="downloadAttendanceCSVTemplate()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                                📥 Download Template CSV
+                            </button>
+                            <button onclick="document.getElementById('attendanceCSVUpload').click()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm">
+                                📤 Upload CSV Presensi
+                            </button>
+                            <input type="file" id="attendanceCSVUpload" accept=".csv" style="display: none;" onchange="uploadAttendanceCSV(event)">
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600">
+                        Download template CSV untuk format yang benar, lalu upload file CSV yang sudah diisi untuk input presensi banyak siswa sekaligus.
+                    </p>
+                </div>
+
                 <!-- Class Selection -->
                 <div class="bg-white p-6 rounded-xl shadow-md mb-6">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
@@ -572,7 +657,7 @@
                             <h3 class="text-xl font-semibold">Hasil Rekap Presensi</h3>
                             <div class="flex gap-2">
                                 <button onclick="exportRekap()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
-                                    📥 Export Excel
+                                    📥 Export CSV
                                 </button>
                                 <button onclick="showDeleteAttendanceOptions()" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors">
                                     🗑️ Hapus Presensi
@@ -1007,6 +1092,13 @@
                             </button>
                         </div>
                     </div>
+                    
+                    <!-- Developer Information -->
+                    <div class="mt-6 pt-4 border-t border-gray-200 text-center">
+                        <p class="text-sm text-gray-600">
+                            Dikembangkan oleh <span class="font-medium text-purple-600">Ade Maulana Dliya</span>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1288,6 +1380,251 @@
             // Count today's journal entries
             const todayJournal = journalData.filter(journal => journal.date === today);
             document.getElementById('jurnalHariIni').textContent = todayJournal.length;
+            
+            // Update charts and lists
+            updateGenderChart();
+            updateTopGradesClassFilter();
+            updateTopGradesList();
+        }
+
+        // Gender distribution chart
+        function updateGenderChart() {
+            const canvas = document.getElementById('genderChart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Set canvas size
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            
+            if (classesData.length === 0) {
+                // Show "No data" message
+                ctx.fillStyle = '#9CA3AF';
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('Belum ada data kelas', canvas.width / 2, canvas.height / 2);
+                return;
+            }
+            
+            // Prepare data
+            const genderData = [];
+            classesData.forEach(classItem => {
+                const classStudents = studentsData.filter(s => s.class === classItem.name);
+                const maleCount = classStudents.filter(s => s.gender === 'L').length;
+                const femaleCount = classStudents.filter(s => s.gender === 'P').length;
+                
+                genderData.push({
+                    className: classItem.name,
+                    male: maleCount,
+                    female: femaleCount,
+                    total: maleCount + femaleCount
+                });
+            });
+            
+            if (genderData.every(d => d.total === 0)) {
+                // Show "No students" message
+                ctx.fillStyle = '#9CA3AF';
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('Belum ada data siswa', canvas.width / 2, canvas.height / 2);
+                return;
+            }
+            
+            // Chart dimensions
+            const padding = 60;
+            const chartWidth = canvas.width - (padding * 2);
+            const chartHeight = canvas.height - (padding * 2);
+            const barWidth = Math.max(30, chartWidth / (genderData.length * 2.5));
+            const maxValue = Math.max(...genderData.map(d => Math.max(d.male, d.female))) || 1;
+            
+            // Draw bars
+            genderData.forEach((data, index) => {
+                const x = padding + (index * barWidth * 2.5);
+                
+                // Male bar
+                const maleHeight = (data.male / maxValue) * chartHeight;
+                ctx.fillStyle = '#3B82F6'; // Blue
+                ctx.fillRect(x, padding + chartHeight - maleHeight, barWidth * 0.8, maleHeight);
+                
+                // Female bar
+                const femaleHeight = (data.female / maxValue) * chartHeight;
+                ctx.fillStyle = '#EC4899'; // Pink
+                ctx.fillRect(x + barWidth, padding + chartHeight - femaleHeight, barWidth * 0.8, femaleHeight);
+                
+                // Class name
+                ctx.fillStyle = '#374151';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(data.className, x + barWidth, canvas.height - 20);
+                
+                // Values on bars
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = 'bold 10px Arial';
+                if (maleHeight > 20) {
+                    ctx.fillText(data.male.toString(), x + barWidth * 0.4, padding + chartHeight - maleHeight + 15);
+                }
+                if (femaleHeight > 20) {
+                    ctx.fillText(data.female.toString(), x + barWidth * 1.4, padding + chartHeight - femaleHeight + 15);
+                }
+            });
+            
+            // Y-axis labels
+            ctx.fillStyle = '#6B7280';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'right';
+            for (let i = 0; i <= 5; i++) {
+                const value = Math.round((maxValue / 5) * i);
+                const y = padding + chartHeight - (i * chartHeight / 5);
+                ctx.fillText(value.toString(), padding - 10, y + 4);
+                
+                // Grid lines
+                ctx.strokeStyle = '#E5E7EB';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(padding + chartWidth, y);
+                ctx.stroke();
+            }
+        }
+
+        // Top grades class filter
+        function updateTopGradesClassFilter() {
+            const filterSelect = document.getElementById('topGradesClassFilter');
+            if (!filterSelect) return;
+            
+            const currentValue = filterSelect.value;
+            filterSelect.innerHTML = '<option value="">Pilih Kelas</option>';
+            
+            classesData.forEach(classData => {
+                const option = document.createElement('option');
+                option.value = classData.name;
+                option.textContent = classData.name;
+                filterSelect.appendChild(option);
+            });
+            
+            if (currentValue) filterSelect.value = currentValue;
+        }
+
+        // Top grades list
+        function updateTopGradesList() {
+            const listContainer = document.getElementById('topGradesList');
+            const selectedClass = document.getElementById('topGradesClassFilter').value;
+            
+            if (!listContainer) return;
+            
+            if (!selectedClass) {
+                listContainer.innerHTML = `
+                    <div class="text-center text-gray-500 py-8">
+                        Pilih kelas untuk melihat 3 nilai tertinggi
+                    </div>
+                `;
+                return;
+            }
+            
+            // Get students from selected class
+            const classStudents = studentsData.filter(s => s.class === selectedClass);
+            
+            if (classStudents.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="text-center text-gray-500 py-8">
+                        Tidak ada siswa di kelas ${selectedClass}
+                    </div>
+                `;
+                return;
+            }
+            
+            // Calculate average grades and attendance for each student
+            const studentGrades = [];
+            classStudents.forEach(student => {
+                const studentGradeRecords = gradesData.filter(g => g.studentId === student.id);
+                
+                // Calculate attendance count for this student in selected class
+                const studentAttendance = attendanceData.filter(att => 
+                    att.studentId === student.id && 
+                    att.class === selectedClass && 
+                    att.status === 'hadir'
+                );
+                const attendanceCount = studentAttendance.length;
+                
+                if (studentGradeRecords.length > 0) {
+                    const totalScore = studentGradeRecords.reduce((sum, grade) => sum + grade.score, 0);
+                    const averageScore = totalScore / studentGradeRecords.length;
+                    studentGrades.push({
+                        studentName: student.name,
+                        studentNIS: student.nis,
+                        score: averageScore,
+                        totalAssessments: studentGradeRecords.length,
+                        attendanceCount: attendanceCount
+                    });
+                }
+            });
+            
+            if (studentGrades.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="text-center text-gray-500 py-8">
+                        Belum ada data nilai untuk kelas ${selectedClass}
+                    </div>
+                `;
+                return;
+            }
+            
+            // Sort by score (highest first), then by attendance count (highest first) as tiebreaker
+            studentGrades.sort((a, b) => {
+                // Primary sort: by score (highest first)
+                if (b.score !== a.score) {
+                    return b.score - a.score;
+                }
+                // Secondary sort: by attendance count (highest first) when scores are equal
+                return b.attendanceCount - a.attendanceCount;
+            });
+            const top3Students = studentGrades.slice(0, 3);
+            
+            // Generate list HTML
+            let listHTML = '';
+            const rankIcons = ['🥇', '🥈', '🥉'];
+            const rankColors = ['text-yellow-600 bg-yellow-50', 'text-gray-600 bg-gray-50', 'text-orange-600 bg-orange-50'];
+            const rankLabels = ['Peringkat 1', 'Peringkat 2', 'Peringkat 3'];
+            
+            top3Students.forEach((student, index) => {
+                const rankIcon = rankIcons[index];
+                const rankColor = rankColors[index];
+                const rankLabel = rankLabels[index];
+                
+                listHTML += `
+                    <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                        <div class="flex items-center gap-4">
+                            <div class="text-3xl">${rankIcon}</div>
+                            <div>
+                                <div class="font-semibold text-lg text-gray-800">${student.studentName}</div>
+                                <div class="text-sm text-gray-600">NISN: ${student.studentNIS}</div>
+                                <div class="flex gap-3 text-xs text-gray-500 mt-1">
+                                    <span>📊 ${student.totalAssessments} penilaian</span>
+                                    <span>✅ ${student.attendanceCount} kehadiran</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-2xl font-bold text-blue-600">${student.score.toFixed(1)}</div>
+                            <div class="text-sm ${rankColor} px-2 py-1 rounded-full font-medium">${rankLabel}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            // Add summary if there are more students
+            if (studentGrades.length > 3) {
+                listHTML += `
+                    <div class="text-center text-sm text-gray-500 py-3 border-t border-gray-200">
+                        Menampilkan 3 teratas dari ${studentGrades.length} siswa yang memiliki nilai
+                    </div>
+                `;
+            }
+            
+            listContainer.innerHTML = listHTML;
         }
 
         // Class management functions
@@ -1740,6 +2077,9 @@
 
             // Update attendance history class filter
             updateAttendanceHistoryOptions();
+            
+            // Update top grades class filter
+            updateTopGradesClassFilter();
         }
 
         // Student management functions
@@ -1784,12 +2124,21 @@
         function updateStudentsList() {
             const tbody = document.getElementById('studentsList');
             const filterClass = document.getElementById('filterStudentClass').value;
+            const searchName = document.getElementById('searchStudentName') ? document.getElementById('searchStudentName').value.toLowerCase() : '';
             tbody.innerHTML = '';
             
             // Filter students based on selected class
             let filteredStudents = filterClass ? 
                 studentsData.filter(student => student.class === filterClass) : 
                 studentsData;
+            
+            // Filter students based on search name
+            if (searchName) {
+                filteredStudents = filteredStudents.filter(student => 
+                    student.name.toLowerCase().includes(searchName) || 
+                    student.nis.includes(searchName)
+                );
+            }
             
             filteredStudents.forEach((student, index) => {
                 const row = document.createElement('tr');
@@ -1822,12 +2171,45 @@
             // Show message if no students found
             if (filteredStudents.length === 0) {
                 const row = document.createElement('tr');
+                let message = 'Belum ada data siswa';
+                
+                if (searchName && filterClass) {
+                    message = `Tidak ada siswa dengan nama "${document.getElementById('searchStudentName').value}" di kelas ${filterClass}`;
+                } else if (searchName) {
+                    message = `Tidak ada siswa dengan nama "${document.getElementById('searchStudentName').value}"`;
+                } else if (filterClass) {
+                    message = `Tidak ada siswa di kelas ${filterClass}`;
+                }
+                
                 row.innerHTML = `
                     <td colspan="5" class="py-8 px-4 text-center text-gray-500">
-                        ${filterClass ? `Tidak ada siswa di kelas ${filterClass}` : 'Belum ada data siswa'}
+                        ${message}
                     </td>
                 `;
                 tbody.appendChild(row);
+            }
+            
+            // Show/hide clear search button
+            const clearBtn = document.getElementById('clearSearchBtn');
+            if (clearBtn) {
+                if (searchName) {
+                    clearBtn.classList.remove('hidden');
+                } else {
+                    clearBtn.classList.add('hidden');
+                }
+            }
+        }
+
+        function searchStudents() {
+            updateStudentsList();
+        }
+
+        function clearStudentSearch() {
+            const searchInput = document.getElementById('searchStudentName');
+            if (searchInput) {
+                searchInput.value = '';
+                updateStudentsList();
+                searchInput.focus();
             }
         }
 
@@ -2040,7 +2422,7 @@
                         </div>
                         <div class="flex gap-2">
                             <label class="flex items-center gap-1">
-                                <input type="radio" name="attendance_${student.id}" value="hadir" class="text-green-600">
+                                <input type="radio" name="attendance_${student.id}" value="hadir" class="text-green-600" checked>
                                 <span class="text-sm">✅ Hadir</span>
                             </label>
                             <label class="flex items-center gap-1">
@@ -2694,7 +3076,126 @@
         }
 
         function exportRekap() {
-            alert('Fitur export Excel akan segera tersedia!');
+            const selectedClass = document.getElementById('rekapClass').value;
+            const startDate = document.getElementById('rekapStartDate').value;
+            const endDate = document.getElementById('rekapEndDate').value;
+            
+            if (!selectedClass) {
+                alert('Generate rekap presensi terlebih dahulu!');
+                return;
+            }
+            
+            const classStudents = studentsData.filter(s => s.class === selectedClass);
+            
+            // Get all attendance for the class
+            let filteredAttendance = attendanceData.filter(att => att.class === selectedClass);
+            
+            // Apply date filter if provided
+            if (startDate || endDate) {
+                filteredAttendance = filteredAttendance.filter(att => {
+                    const attDate = att.date;
+                    let includeRecord = true;
+                    
+                    if (startDate && attDate < startDate) {
+                        includeRecord = false;
+                    }
+                    if (endDate && attDate > endDate) {
+                        includeRecord = false;
+                    }
+                    
+                    return includeRecord;
+                });
+            }
+            
+            // Get unique dates from actual attendance records
+            const dates = [...new Set(filteredAttendance.map(att => att.date))].sort();
+            
+            if (dates.length === 0) {
+                alert('Tidak ada data presensi untuk diekspor!');
+                return;
+            }
+            
+            // Create CSV content
+            let csvContent = "NISN,Nama Siswa";
+            
+            // Add date columns
+            dates.forEach(date => {
+                const formattedDate = new Date(date).toLocaleDateString('id-ID', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                });
+                csvContent += `,${formattedDate}`;
+            });
+            
+            // Add summary columns
+            csvContent += ",Hadir,Sakit,Izin,Alpha,Persentase\n";
+            
+            // Add student data
+            classStudents.forEach(student => {
+                const studentAttendance = filteredAttendance.filter(att => att.studentId === student.id);
+                
+                let hadirCount = 0, sakitCount = 0, izinCount = 0, alphaCount = 0;
+                
+                csvContent += `${student.nis},${student.name}`;
+                
+                // Add attendance status for each date
+                dates.forEach(date => {
+                    const attendance = studentAttendance.find(att => att.date === date);
+                    const status = attendance ? attendance.status : '-';
+                    
+                    let statusDisplay = '';
+                    switch(status) {
+                        case 'hadir':
+                            statusDisplay = 'H';
+                            hadirCount++;
+                            break;
+                        case 'sakit':
+                            statusDisplay = 'S';
+                            sakitCount++;
+                            break;
+                        case 'izin':
+                            statusDisplay = 'I';
+                            izinCount++;
+                            break;
+                        case 'alpha':
+                            statusDisplay = 'A';
+                            alphaCount++;
+                            break;
+                        default:
+                            statusDisplay = '-';
+                    }
+                    
+                    csvContent += `,${statusDisplay}`;
+                });
+                
+                // Add summary data
+                const totalDays = dates.length;
+                const attendancePercentage = totalDays > 0 ? ((hadirCount / totalDays) * 100).toFixed(1) : '0.0';
+                
+                csvContent += `,${hadirCount},${sakitCount},${izinCount},${alphaCount},${attendancePercentage}%\n`;
+            });
+            
+            // Create and download CSV file
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            
+            // Create filename with class and date range
+            let filename = `rekap_presensi_${selectedClass.replace(/[^a-zA-Z0-9]/g, '_')}`;
+            if (startDate && endDate) {
+                filename += `_${startDate}_${endDate}`;
+            } else if (dates.length > 0) {
+                filename += `_${dates[0]}_${dates[dates.length - 1]}`;
+            }
+            filename += `_${new Date().toISOString().split('T')[0]}.csv`;
+            
+            a.download = filename;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            alert('File CSV rekap presensi berhasil didownload!');
         }
 
         function showDeleteAttendanceOptions() {
@@ -2813,11 +3314,18 @@
             attendanceData = attendanceData.filter(att => !(att.date === date && att.class === className));
             const deletedCount = originalLength - attendanceData.length;
             
+            // Remove attendance history record for the deleted session
+            const historyId = `${className}_${date}`;
+            attendanceHistoryData = attendanceHistoryData.filter(h => h.id !== historyId);
+            
             // Save updated data
             saveData();
             
             // Update dashboard
             updateDashboard();
+            
+            // Update attendance history display
+            updateAttendanceHistory();
             
             // Close modal
             closeDeleteAttendanceModal();
@@ -2825,10 +3333,15 @@
             // Show success message
             alert(`Berhasil menghapus ${deletedCount} data presensi untuk tanggal ${formattedDate}!`);
             
-            // Refresh rekap if it was already generated
+            // Refresh rekap if it was already generated to remove deleted dates
             const rekapResults = document.getElementById('rekapResults');
             if (!rekapResults.classList.contains('hidden')) {
-                generateRekap();
+                // Clear the current rekap display first
+                document.getElementById('rekapTable').innerHTML = '';
+                rekapResults.classList.add('hidden');
+                
+                // Show message that rekap needs to be regenerated
+                alert('Rekap presensi telah direset karena ada data yang dihapus. Silakan generate ulang rekap presensi.');
             }
         }
 
@@ -3318,6 +3831,200 @@ ${journal.notes ? `CATATAN TAMBAHAN:\n${journal.notes}` : 'Tidak ada catatan tam
             }
         }
 
+        // Attendance CSV functions
+        function downloadAttendanceCSVTemplate() {
+            let csvContent = "Tanggal,Kelas,NISN,Nama,Status\n";
+            csvContent += "2024-01-15,X IPA 1,12345,Contoh Nama Siswa,hadir\n";
+            csvContent += "2024-01-15,X IPA 1,12346,Contoh Nama Siswa 2,sakit\n";
+            csvContent += "2024-01-15,X IPA 1,12347,Contoh Nama Siswa 3,izin\n";
+            csvContent += "2024-01-15,X IPA 1,12348,Contoh Nama Siswa 4,alpha\n";
+            csvContent += "2024-01-16,X IPA 1,12345,Contoh Nama Siswa,hadir\n";
+            csvContent += "2024-01-16,X IPA 1,12346,Contoh Nama Siswa 2,hadir\n";
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'template_presensi.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            alert('Template CSV presensi berhasil didownload!\n\nFormat:\n- Tanggal: YYYY-MM-DD\n- Status: hadir, sakit, izin, alpha');
+        }
+
+        function uploadAttendanceCSV(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const csv = e.target.result;
+                const lines = csv.split('\n').filter(line => line.trim() !== '');
+                
+                if (lines.length < 2) {
+                    alert('File CSV kosong atau tidak valid!');
+                    return;
+                }
+                
+                const headers = lines[0].split(',').map(h => h.trim());
+                
+                // Validate headers
+                const expectedHeaders = ['Tanggal', 'Kelas', 'NISN', 'Nama', 'Status'];
+                const isValidFormat = expectedHeaders.every(header => 
+                    headers.some(h => h.toLowerCase() === header.toLowerCase())
+                );
+                
+                if (!isValidFormat) {
+                    alert('Format CSV tidak sesuai!\n\nPastikan header: Tanggal,Kelas,NISN,Nama,Status\n\nDownload template untuk format yang benar.');
+                    return;
+                }
+                
+                let successCount = 0;
+                let errorCount = 0;
+                let updateCount = 0;
+                const errors = [];
+                const processedSessions = new Set();
+                
+                // Process each line
+                for (let i = 1; i < lines.length; i++) {
+                    const values = lines[i].split(',').map(v => v.trim());
+                    
+                    if (values.length < 5) {
+                        errorCount++;
+                        errors.push(`Baris ${i + 1}: Data tidak lengkap`);
+                        continue;
+                    }
+                    
+                    const [tanggal, kelas, nisn, nama, status] = values;
+                    
+                    // Validate data
+                    if (!tanggal || !kelas || !nisn || !nama || !status) {
+                        errorCount++;
+                        errors.push(`Baris ${i + 1}: Ada field yang kosong`);
+                        continue;
+                    }
+                    
+                    // Validate date format
+                    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+                    if (!dateRegex.test(tanggal)) {
+                        errorCount++;
+                        errors.push(`Baris ${i + 1}: Format tanggal harus YYYY-MM-DD`);
+                        continue;
+                    }
+                    
+                    // Validate status
+                    const validStatuses = ['hadir', 'sakit', 'izin', 'alpha'];
+                    if (!validStatuses.includes(status.toLowerCase())) {
+                        errorCount++;
+                        errors.push(`Baris ${i + 1}: Status harus: hadir, sakit, izin, atau alpha`);
+                        continue;
+                    }
+                    
+                    // Find student by NISN and class
+                    const student = studentsData.find(s => s.nis === nisn && s.class === kelas);
+                    if (!student) {
+                        errorCount++;
+                        errors.push(`Baris ${i + 1}: NISN ${nisn} tidak ditemukan di kelas ${kelas}`);
+                        continue;
+                    }
+                    
+                    // Check if attendance already exists
+                    const existingAttendance = attendanceData.find(att => 
+                        att.studentId === student.id && att.date === tanggal && att.class === kelas
+                    );
+                    
+                    if (existingAttendance) {
+                        // Update existing attendance
+                        existingAttendance.status = status.toLowerCase();
+                        updateCount++;
+                    } else {
+                        // Add new attendance
+                        const attendanceRecord = {
+                            id: Date.now() + student.id + i,
+                            studentId: student.id,
+                            studentName: student.name,
+                            class: kelas,
+                            date: tanggal,
+                            status: status.toLowerCase()
+                        };
+                        
+                        attendanceData.push(attendanceRecord);
+                        successCount++;
+                    }
+                    
+                    // Track processed sessions for history update
+                    processedSessions.add(`${kelas}_${tanggal}`);
+                }
+                
+                // Update attendance history for processed sessions
+                processedSessions.forEach(sessionId => {
+                    const [sessionClass, sessionDate] = sessionId.split('_');
+                    const sessionAttendance = attendanceData.filter(att => 
+                        att.class === sessionClass && att.date === sessionDate
+                    );
+                    
+                    if (sessionAttendance.length > 0) {
+                        // Calculate stats
+                        const stats = { hadir: 0, sakit: 0, izin: 0, alpha: 0 };
+                        sessionAttendance.forEach(att => {
+                            stats[att.status]++;
+                        });
+                        
+                        // Find or create history record
+                        const existingHistoryIndex = attendanceHistoryData.findIndex(h => h.id === sessionId);
+                        const historyRecord = {
+                            id: sessionId,
+                            class: sessionClass,
+                            date: sessionDate,
+                            totalStudents: sessionAttendance.length,
+                            attendedStudents: sessionAttendance.length,
+                            stats: stats,
+                            inputTime: new Date().toISOString(),
+                            isEdit: existingHistoryIndex >= 0
+                        };
+                        
+                        if (existingHistoryIndex >= 0) {
+                            attendanceHistoryData[existingHistoryIndex] = historyRecord;
+                        } else {
+                            attendanceHistoryData.unshift(historyRecord);
+                        }
+                    }
+                });
+                
+                // Keep only last 50 history records
+                if (attendanceHistoryData.length > 50) {
+                    attendanceHistoryData = attendanceHistoryData.slice(0, 50);
+                }
+                
+                // Save data
+                saveData();
+                updateDashboard();
+                updateAttendanceHistory();
+                
+                // Show results
+                let message = `Upload presensi selesai!\n`;
+                message += `✅ Berhasil ditambah: ${successCount} presensi\n`;
+                if (updateCount > 0) {
+                    message += `🔄 Berhasil diperbarui: ${updateCount} presensi\n`;
+                }
+                if (errorCount > 0) {
+                    message += `❌ Error: ${errorCount} baris`;
+                    if (errors.length > 0) {
+                        message += '\n\nDetail error:\n' + errors.slice(0, 5).join('\n');
+                        if (errors.length > 5) {
+                            message += `\n... dan ${errors.length - 5} error lainnya`;
+                        }
+                    }
+                }
+                
+                alert(message);
+                
+                // Reset file input
+                event.target.value = '';
+            };
+            reader.readAsText(file);
+        }
+
         // Student CSV functions
         function downloadStudentCSVTemplate() {
             let csvContent = "NISN,Nama,Kelas,JK\n";
@@ -3450,6 +4157,165 @@ ${journal.notes ? `CATATAN TAMBAHAN:\n${journal.notes}` : 'Tidak ada catatan tam
                 event.target.value = '';
             };
             reader.readAsText(file);
+        }
+
+        function downloadStudentsByClass() {
+            const selectedClass = document.getElementById('filterStudentClass').value;
+            
+            // Determine which students to download
+            let studentsToDownload;
+            let filename;
+            
+            if (selectedClass) {
+                // Download students from selected class only
+                studentsToDownload = studentsData.filter(s => s.class === selectedClass);
+                filename = `daftar_siswa_${selectedClass.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`;
+                
+                if (studentsToDownload.length === 0) {
+                    alert(`Tidak ada siswa di kelas ${selectedClass}!`);
+                    return;
+                }
+            } else {
+                // Download all students
+                studentsToDownload = studentsData;
+                filename = `daftar_siswa_semua_kelas_${new Date().toISOString().split('T')[0]}.csv`;
+                
+                if (studentsToDownload.length === 0) {
+                    alert('Tidak ada data siswa untuk diunduh!');
+                    return;
+                }
+            }
+            
+            // Create CSV content
+            let csvContent = "NISN,Nama,Kelas,JK\n";
+            
+            studentsToDownload.forEach(student => {
+                const jk = student.gender === 'L' ? 'L' : 'P';
+                csvContent += `${student.nis},${student.name},${student.class},${jk}\n`;
+            });
+            
+            // Create and download CSV file
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            // Show success message
+            const classInfo = selectedClass ? `kelas ${selectedClass}` : 'semua kelas';
+            alert(`File CSV daftar siswa ${classInfo} berhasil diunduh!\n\nJumlah siswa: ${studentsToDownload.length}`);
+        }
+
+        function deleteStudentsByClass() {
+            const selectedClass = document.getElementById('filterStudentClass').value;
+            
+            if (!selectedClass) {
+                alert('Pilih kelas terlebih dahulu untuk menghapus siswa!');
+                return;
+            }
+            
+            // Find students in the selected class
+            const studentsToDelete = studentsData.filter(s => s.class === selectedClass);
+            
+            if (studentsToDelete.length === 0) {
+                alert(`Tidak ada siswa di kelas ${selectedClass}!`);
+                return;
+            }
+            
+            // Count related data that will be deleted
+            const studentIds = studentsToDelete.map(s => s.id);
+            const relatedAttendance = attendanceData.filter(att => studentIds.includes(att.studentId));
+            const relatedGrades = gradesData.filter(grade => studentIds.includes(grade.studentId));
+            
+            // Create confirmation message
+            let confirmMessage = `Apakah Anda yakin ingin menghapus SEMUA siswa dari kelas ${selectedClass}?\n\n`;
+            confirmMessage += `📊 Data yang akan dihapus:\n`;
+            confirmMessage += `• ${studentsToDelete.length} siswa\n`;
+            if (relatedAttendance.length > 0) {
+                confirmMessage += `• ${relatedAttendance.length} data presensi\n`;
+            }
+            if (relatedGrades.length > 0) {
+                confirmMessage += `• ${relatedGrades.length} data nilai\n`;
+            }
+            confirmMessage += `\n⚠️ PERINGATAN: Tindakan ini tidak dapat dibatalkan!`;
+            
+            const confirmDelete = confirm(confirmMessage);
+            
+            if (!confirmDelete) {
+                return;
+            }
+            
+            // Double confirmation for safety
+            const doubleConfirm = confirm(`Konfirmasi sekali lagi: Hapus SEMUA ${studentsToDelete.length} siswa dari kelas ${selectedClass}?`);
+            
+            if (!doubleConfirm) {
+                return;
+            }
+            
+            // Remove students and related data
+            const originalStudentCount = studentsData.length;
+            const originalAttendanceCount = attendanceData.length;
+            const originalGradeCount = gradesData.length;
+            
+            // Remove students
+            studentsData = studentsData.filter(s => s.class !== selectedClass);
+            
+            // Remove related attendance data
+            attendanceData = attendanceData.filter(att => !studentIds.includes(att.studentId));
+            
+            // Remove related grade data
+            gradesData = gradesData.filter(grade => !studentIds.includes(grade.studentId));
+            
+            // Update class student count
+            const classData = classesData.find(c => c.name === selectedClass);
+            if (classData) {
+                classData.studentCount = 0;
+                updateClassViews();
+            }
+            
+            // Update attendance history - remove sessions that now have no students
+            attendanceHistoryData = attendanceHistoryData.filter(history => {
+                if (history.class === selectedClass) {
+                    // Check if there are still attendance records for this class and date
+                    const remainingAttendance = attendanceData.filter(att => 
+                        att.class === selectedClass && att.date === history.date
+                    );
+                    return remainingAttendance.length > 0;
+                }
+                return true;
+            });
+            
+            // Save updated data
+            saveData();
+            
+            // Update all displays
+            updateStudentsList();
+            updateDashboard();
+            updateAttendanceHistory();
+            
+            // Calculate deleted counts
+            const deletedStudents = originalStudentCount - studentsData.length;
+            const deletedAttendance = originalAttendanceCount - attendanceData.length;
+            const deletedGrades = originalGradeCount - gradesData.length;
+            
+            // Show success message
+            let successMessage = `✅ Berhasil menghapus semua siswa dari kelas ${selectedClass}!\n\n`;
+            successMessage += `📊 Data yang dihapus:\n`;
+            successMessage += `• ${deletedStudents} siswa\n`;
+            if (deletedAttendance > 0) {
+                successMessage += `• ${deletedAttendance} data presensi\n`;
+            }
+            if (deletedGrades > 0) {
+                successMessage += `• ${deletedGrades} data nilai\n`;
+            }
+            
+            alert(successMessage);
+            
+            // Reset filter to show all classes
+            document.getElementById('filterStudentClass').value = '';
+            updateStudentsList();
         }
 
         function downloadGradeTemplate(assessmentId) {
@@ -4309,5 +5175,5 @@ ${journal.notes ? `CATATAN TAMBAHAN:\n${journal.notes}` : 'Tidak ada catatan tam
             checkAuthentication();
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'993f09f2e11a89a1',t:'MTc2MTM2NzI1OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9957d9c057bf514a',t:'MTc2MTYyNzQyOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
