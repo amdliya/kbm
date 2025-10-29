@@ -794,8 +794,14 @@
                 <!-- Assessment List -->
                 <div class="bg-white rounded-xl shadow-md mb-6">
                     <div class="p-6 border-b border-gray-200">
-                        <div class="flex justify-between items-center">
+                        <div class="flex justify-between items-center mb-4">
                             <h3 class="text-xl font-semibold">Daftar Penilaian</h3>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <label for="filterAssessmentClass" class="text-sm font-medium text-gray-700">Filter Kelas:</label>
+                            <select id="filterAssessmentClass" onchange="filterAssessmentsByClass()" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">Semua Kelas</option>
+                            </select>
                         </div>
                     </div>
                     <div class="p-6">
@@ -2031,6 +2037,13 @@
                     rekapClassSelect.appendChild(option);
                 });
                 if (currentValue) rekapClassSelect.value = currentValue;
+                
+                // Add event listener to hide rekap results when class selection changes to empty
+                rekapClassSelect.addEventListener('change', function() {
+                    if (!this.value) {
+                        document.getElementById('rekapResults').classList.add('hidden');
+                    }
+                });
             }
 
             // Update dropdown di menu Jurnal
@@ -2061,6 +2074,20 @@
                 if (currentValue) nilaiClassSelect.value = currentValue;
             }
 
+            // Update filter dropdown di menu Input Nilai (Daftar Penilaian)
+            const filterAssessmentClassSelect = document.getElementById('filterAssessmentClass');
+            if (filterAssessmentClassSelect) {
+                const currentValue = filterAssessmentClassSelect.value;
+                filterAssessmentClassSelect.innerHTML = '<option value="">Semua Kelas</option>';
+                classesData.forEach(classData => {
+                    const option = document.createElement('option');
+                    option.value = classData.name;
+                    option.textContent = classData.name;
+                    filterAssessmentClassSelect.appendChild(option);
+                });
+                if (currentValue) filterAssessmentClassSelect.value = currentValue;
+            }
+
             // Update dropdown di menu Rekap Nilai
             const rekapNilaiClassSelect = document.getElementById('rekapNilaiClass');
             if (rekapNilaiClassSelect) {
@@ -2073,6 +2100,14 @@
                     rekapNilaiClassSelect.appendChild(option);
                 });
                 if (currentValue) rekapNilaiClassSelect.value = currentValue;
+                
+                // Add event listener to hide rekap results when class selection changes to empty
+                rekapNilaiClassSelect.addEventListener('change', function() {
+                    if (!this.value) {
+                        document.getElementById('rekapNilaiResults').classList.add('hidden');
+                        document.getElementById('finalGradesSection').classList.add('hidden');
+                    }
+                });
             }
 
             // Update attendance history class filter
@@ -2525,6 +2560,10 @@
                 
                 const actionText = isEdit ? 'diperbarui' : 'disimpan';
                 alert(`Presensi berhasil ${actionText} untuk ${savedCount} siswa!`);
+                
+                // Reset attendance form: keep date, reset class selection, hide attendance container
+                document.getElementById('attendanceClass').value = '';
+                document.getElementById('attendanceContainer').classList.add('hidden');
             } else {
                 alert('Tidak ada presensi yang dipilih!');
             }
@@ -2861,6 +2900,8 @@
             
             if (!selectedClass) {
                 alert('Pilih kelas terlebih dahulu!');
+                // Hide rekap results when no class is selected
+                document.getElementById('rekapResults').classList.add('hidden');
                 return;
             }
             
@@ -3646,11 +3687,17 @@ ${journal.notes ? `CATATAN TAMBAHAN:\n${journal.notes}` : 'Tidak ada catatan tam
 
         function updateAssessmentList() {
             const container = document.getElementById('assessmentList');
+            const filterClass = document.getElementById('filterAssessmentClass') ? document.getElementById('filterAssessmentClass').value : '';
             container.innerHTML = '';
+            
+            // Filter assessments by selected class
+            let filteredAssessments = filterClass ? 
+                assessmentData.filter(assessment => assessment.class === filterClass) : 
+                assessmentData;
             
             // Use original order from assessmentData (for move up/down functionality)
             // Don't sort by date to maintain user-defined order
-            assessmentData.forEach((assessment, index) => {
+            filteredAssessments.forEach((assessment, index) => {
                 const assessmentItem = document.createElement('div');
                 assessmentItem.className = 'bg-gray-50 p-4 rounded-lg border border-gray-200';
                 assessmentItem.innerHTML = `
@@ -3669,7 +3716,7 @@ ${journal.notes ? `CATATAN TAMBAHAN:\n${journal.notes}` : 'Tidak ada catatan tam
                             <button onclick="moveAssessmentUp(${assessment.id})" class="text-green-600 hover:text-green-800 px-2 py-1 rounded text-sm bg-green-50 hover:bg-green-100 transition-colors ${index === 0 ? 'opacity-50 cursor-not-allowed' : ''}" ${index === 0 ? 'disabled' : ''}>
                                 ⬆️ Up
                             </button>
-                            <button onclick="moveAssessmentDown(${assessment.id})" class="text-green-600 hover:text-green-800 px-2 py-1 rounded text-sm bg-green-50 hover:bg-green-100 transition-colors ${index === assessmentData.length - 1 ? 'opacity-50 cursor-not-allowed' : ''}" ${index === assessmentData.length - 1 ? 'disabled' : ''}>
+                            <button onclick="moveAssessmentDown(${assessment.id})" class="text-green-600 hover:text-green-800 px-2 py-1 rounded text-sm bg-green-50 hover:bg-green-100 transition-colors ${index === filteredAssessments.length - 1 ? 'opacity-50 cursor-not-allowed' : ''}" ${index === filteredAssessments.length - 1 ? 'disabled' : ''}>
                                 ⬇️ Down
                             </button>
                             <button onclick="deleteAssessment(${assessment.id})" class="text-red-600 hover:text-red-800 px-2 py-1 rounded text-sm bg-red-50 hover:bg-red-100 transition-colors">
@@ -3690,8 +3737,12 @@ ${journal.notes ? `CATATAN TAMBAHAN:\n${journal.notes}` : 'Tidak ada catatan tam
                 container.appendChild(assessmentItem);
             });
             
-            if (assessmentData.length === 0) {
-                container.innerHTML = '<p class="text-gray-500 text-center py-8">Belum ada penilaian yang dibuat.</p>';
+            if (filteredAssessments.length === 0) {
+                if (filterClass) {
+                    container.innerHTML = `<p class="text-gray-500 text-center py-8">Tidak ada penilaian untuk kelas ${filterClass}.</p>`;
+                } else {
+                    container.innerHTML = '<p class="text-gray-500 text-center py-8">Belum ada penilaian yang dibuat.</p>';
+                }
             }
         }
 
@@ -3829,6 +3880,10 @@ ${journal.notes ? `CATATAN TAMBAHAN:\n${journal.notes}` : 'Tidak ada catatan tam
                 updateAssessmentList();
                 saveData();
             }
+        }
+
+        function filterAssessmentsByClass() {
+            updateAssessmentList();
         }
 
         // Attendance CSV functions
@@ -4722,6 +4777,9 @@ ${journal.notes ? `CATATAN TAMBAHAN:\n${journal.notes}` : 'Tidak ada catatan tam
             
             if (!selectedClass) {
                 alert('Pilih kelas terlebih dahulu!');
+                // Hide rekap results when no class is selected
+                document.getElementById('rekapNilaiResults').classList.add('hidden');
+                document.getElementById('finalGradesSection').classList.add('hidden');
                 return;
             }
             
@@ -5175,5 +5233,5 @@ ${journal.notes ? `CATATAN TAMBAHAN:\n${journal.notes}` : 'Tidak ada catatan tam
             checkAuthentication();
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9957d9c057bf514a',t:'MTc2MTYyNzQyOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'995eb260616d6141',t:'MTc2MTY5OTIxNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
